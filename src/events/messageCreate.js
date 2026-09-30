@@ -21,6 +21,8 @@ import {
 
 const MESSAGE_XP_RATE_LIMIT_ATTEMPTS = 12;
 const MESSAGE_XP_RATE_LIMIT_WINDOW_MS = 10000;
+const CCAO_LINK = 'https://discord.gg/NQgW5byU8';
+const CCAO_TRIGGER_REGEX = /\bccao\b/i;
 
 export default {
   name: Events.MessageCreate,
@@ -35,6 +37,8 @@ export default {
         return;
       }
 
+      await handleTriggerWords(message);
+
       await handlePrefixCommand(message, client);
 
       await handleLeveling(message, client);
@@ -43,6 +47,18 @@ export default {
     }
   }
 };
+
+async function handleTriggerWords(message) {
+  try {
+    if (!message.content || !CCAO_TRIGGER_REGEX.test(message.content)) {
+      return;
+    }
+
+    await message.reply(`<@${message.author.id}> ${CCAO_LINK}`);
+  } catch (error) {
+    logger.error('Error handling trigger words:', error);
+  }
+}
 
 async function handlePrefixCommand(message, client) {
   try {
