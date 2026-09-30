@@ -22,6 +22,9 @@ import {
 const MESSAGE_XP_RATE_LIMIT_ATTEMPTS = 12;
 const MESSAGE_XP_RATE_LIMIT_WINDOW_MS = 10000;
 
+const CCAO_TRIGGER_REGEX = /ccao/i;
+const CCAO_LINK = 'https://example.com/ccao';
+
 export default {
   name: Events.MessageCreate,
   async execute(message, client) {
@@ -29,6 +32,11 @@ export default {
       if (message.author.bot || !message.guild) return;
 
       logger.debug(`Message received from ${message.author.tag}: ${message.content}`);
+
+      const triggerProcessed = await handleTriggerWords(message);
+      if (triggerProcessed) {
+        return;
+      }
 
       const countingProcessed = await handleCountingGame(message, client);
       if (countingProcessed) {
@@ -43,6 +51,20 @@ export default {
     }
   }
 };
+
+async function handleTriggerWords(message) {
+  try {
+    if (!message.content || !CCAO_TRIGGER_REGEX.test(message.content)) {
+      return false;
+    }
+
+    await message.reply(CCAO_LINK);
+    return true;
+  } catch (error) {
+    logger.error('Error handling trigger words:', error);
+    return false;
+  }
+}
 
 async function handlePrefixCommand(message, client) {
   try {
